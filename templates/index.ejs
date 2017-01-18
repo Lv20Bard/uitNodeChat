@@ -40,12 +40,13 @@
           <div class="row">
 
             <!-- Message Window -->
-            <div class="col-md-12 message-window">
+            <div class="col-md-10 message-window">
 
               <!-- Messages Title Window -->
               <div class="messages-title">
-                <h1 id="current-channel-title">Welcome to the Chat App!</h1>
-                <p id="current-channel-purpose" class="channel-purpose">This may be a very good place to put some dynamic text!</p>
+                <h1 id="current-channel-title">Neeto Chat App!</h1>
+                <p id="current-channel-purpose" class="channel-purpose"> <%= tagline%></p>
+
               </div>
 
               <!-- Incoming Messages Window -->
@@ -57,6 +58,12 @@
               <div class="new-message-window">
                 <input type='text' id='new-message-input' class="form-control input-lg" placeholder='Message'>
               </div>
+            </div>
+            <div class="col-md-2">
+              <h4>Online Users</h4>
+              <ul id="user-list">
+                
+              </ul>
             </div>
           </div>
         </div>
@@ -71,25 +78,51 @@
       $(document).ready(function() {
         /*  Messaging Events */
         $('#new-message-input').keypress(function (e) {
+
           if (e.keyCode == 13) {
-
             if ($("#new-message-input").val() != '') {
-              
-              // @TODO: might be a good idea to add your 'send message' code here...
+              socket.emit('send message', $('#new-message-input').val())
 
-              $("#new-message-input").val("");
+
+
+              $('#new-message-input').val("");
             }
           }
         });
 
-        $("#login").click(function() {
-          if ($("#login-name").val() != "") {
-            
-            // @TODO: might be a good idea to add your 'add username' code here...
 
-            $("#messages-login-window").hide();
-            $("#messages-dashboard-window").show();
+        socket.on('new message', function(data){
+          $('#messages-list').append('<div class="well"><strong>'+data.user+'</strong>: '+data.msg+'</div>')
+        });
+
+
+
+
+        $("#login").click(function() {
+
+          if ($("#login-name").val() != "") {
+           
+            socket.emit('new users', $("#login-name").val(), function(data){
+                
+              if(data){
+                $("#messages-login-window").hide();
+                $("#messages-dashboard-window").show();
+
+              }
+              $("#login-name").val('');
+            });
+
+
+            
           }
+        });
+        socket.on('get users', function(data){
+          var html = '';
+          for(i = 0; i < data.length; i++){
+            html += '<li class= "list-group-item">'+data[i]+'</li>';
+          }
+          $('#user-list').html(html);
+
         });
       });
     </script>
